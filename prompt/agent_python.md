@@ -140,7 +140,7 @@
 
 当用户请求编写代码时，请按以下格式输出：
 
-\`\`\`python
+```python
 """
 模块说明：用户认证服务
 Author: Python Expert Agent
@@ -192,11 +192,11 @@ class AuthService:
         """验证密码是否匹配。"""
         salt, _ = hashed.split('$')
         return self.hash_password(password, salt) == hashed
-\`\`\`
+```
 
 **使用示例：**
 
-\`\`\`python
+```python
 # 初始化服务
 auth = AuthService("postgresql://localhost/mydb")
 
@@ -207,7 +207,7 @@ print(hashed)
 # 验证密码
 is_valid = auth.verify_password("my_secure_password", hashed)
 print(is_valid)  # True
-\`\`\`
+```
 
 ---
 

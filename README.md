@@ -62,14 +62,14 @@
 - 在编辑器中，CUE 会在理解上下文后，在你光标的位置启用 CUE 功能（通过输入字符或鼠标点击等都可能会唤起 CUE 功能）
 - CUE 被唤起后，Tab 采纳，Escape 拒绝，Shift + Tab 逐行采纳，Ctrl + RightArrow 逐词采纳
 - 通过 trae 的右下角的 CUE 图标，可以选择是否启用 CUE 功能
-- 打开 crawler/weather.py 文件，测试并学习 CUE
+- 打开 python/weather.py 文件，测试并学习 CUE
 
 ### trae 编辑器内对话
 - 通过 Ctrl + I 可以在光标位置唤起编辑器内对话框，对话时会自动发送上下文给大模型
   - 例如：描述函数的功能后，可以自动生成函数的代码
   - 例如：可以为函数添加注释
   - 例如：可以优化选中的代码，重构选中的代码
-- 打开 crawler/weather.py 文件，测试并学习编辑器内对话
+- 打开 python/weather.py 文件，测试并学习编辑器内对话
 
 ### trae 上下文
 - 在编辑器或终端窗口中，选择一段内容，然后按 Ctrl + U 会将其添加到对话框的上下文中

@@ -77,7 +77,7 @@
 - 设置 -> 代码索引，引用 #Workspace, #Folder 时，请先保证这个代码索引已经构建完成
 - 设置 -> 忽略文件，引用 #Workspace, #Folder 时，不会将这些文件添加到上下文中（.gitignore 中定义的文件也不会被添加到上下文中）
 - 设置 -> 文档集，用于管理自定义文档集，以便后续通过 # 引用
-- 设置 -> 规则和技能，可以管理个人规则（提示词可以让 ai 帮写 [提示词示例](prompt/user_rule.md)）和项目规则（提示词可以让 ai 帮写 [提示词示例](prompt/project_rule.md)）
+- 设置 -> 规则和技能，可以管理个人规则（提示词可以让 ai 帮写，[提示词示例](prompt/user_rule.md)）和项目规则（提示词可以让 ai 帮写，[提示词示例](prompt/project_rule.md)）
 
 ### trae 的小技巧
 - 预览 markdown 文件

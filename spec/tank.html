@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坦克游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            color: #00ff88;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .score-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            color: #00ff88;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .game-canvas-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        #gameCanvas {
+            background: #0a0a0a;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2),
+                        inset 0 0 50px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .game-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .overlay-title {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .overlay-score {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #0066ff 0%, #ff00ff 100%);
+            color: #ffffff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.5),
+                        0 0 40px rgba(255, 0, 255, 0.3);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 102, 255, 0.7),
+                        0 0 60px rgba(255, 0, 255, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 0 15px rgba(0, 102, 255, 0.5),
+                        0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: linear-gradient(90deg, #0066ff 0%, #ff00ff 100%);
+            color: #ffffff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 102, 255, 0.4),
+                        0 0 30px rgba(255, 0, 255, 0.2);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 102, 255, 0.6),
+                        0 0 50px rgba(255, 0, 255, 0.4);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.4),
+                        0 0 20px rgba(255, 0, 255, 0.2);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(90deg, #00ccff 0%, #ff00cc 100%);
+            box-shadow: 0 0 20px rgba(0, 204, 255, 0.6),
+                        0 0 40px rgba(255, 0, 204, 0.4);
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .instructions p {
+            margin: 5px 0;
+        }
+
+        .key {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 10px;
+            border-radius: 5px;
+            margin: 0 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 15px;
+            }
+
+            .game-title {
+                font-size: 1.8rem;
+            }
+
+            .score-board {
+                gap: 15px;
+            }
+
+            .score-item {
+                padding: 8px 15px;
+            }
+
+            .score-value {
+                font-size: 1.4rem;
+            }
+
+            #gameCanvas {
+                width: 300px;
+                height: 300px;
+            }
+
+            .game-overlay {
+                width: 300px;
+                height: 300px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+            }
+
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">🚀 坦克游戏</h1>
+        </header>
+
+        <section class="score-board" aria-label="分数面板">
+            <div class="score-item">
+                <div class="score-label">当前分数</div>
+                <div class="score-value" id="currentScore">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">最高分数</div>
+                <div class="score-value" id="highScore">0</div>
+            </div>
+        </section>
+
+        <section class="game-canvas-container">
+            <canvas id="gameCanvas" width="400" height="400" aria-label="游戏画布"></canvas>
+            <div class="game-overlay" id="gameOverlay">
+                <h2 class="overlay-title" id="overlayTitle">准备开始</h2>
+                <p class="overlay-score" id="overlayScore"></p>
+                <button class="btn" id="startBtn">开始游戏</button>
+            </div>
+        </section>
+
+        <section class="controls">
+            <button class="control-btn" id="pauseBtn" aria-label="暂停游戏">⏸ 暂停</button>
+            <button class="control-btn" id="restartBtn" aria-label="重新开始">🔄 重新开始</button>
+        </section>
+
+        <footer class="instructions">
+            <p>使用 <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> 控制坦克移动</p>
+            <p>按 <span class="key">空格</span> 发射子弹</p>
+        </footer>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const currentScoreEl = document.getElementById('currentScore');
+        const highScoreEl = document.getElementById('highScore');
+        const gameOverlay = document.getElementById('gameOverlay');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayScore = document.getElementById('overlayScore');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        const CANVAS_SIZE = 400;
+        const TANK_SIZE = 30;
+        const BULLET_SIZE = 5;
+        const TANK_SPEED = 2;
+        const BULLET_SPEED = 5;
+        const ENEMY_COUNT = 3;
+
+        let playerTank = {};
+        let enemyTanks = [];
+        let bullets = [];
+        let score = 0;
+        let highScore = localStorage.getItem('tankHighScore') || 0;
+        let gameLoop = null;
+        let isGameRunning = false;
+        let isPaused = false;
+
+        highScoreEl.textContent = highScore;
+
+        function initGame() {
+            playerTank = {
+                x: CANVAS_SIZE / 2 - TANK_SIZE / 2,
+                y: CANVAS_SIZE / 2 - TANK_SIZE / 2,
+                angle: 0,
+                speed: TANK_SPEED
+            };
+
+            enemyTanks = [];
+            for (let i = 0; i < ENEMY_COUNT; i++) {
+                enemyTanks.push({
+                    x: Math.random() * (CANVAS_SIZE - TANK_SIZE),
+                    y: Math.random() * (CANVAS_SIZE - TANK_SIZE),
+                    angle: Math.random() * Math.PI * 2,
+                    speed: TANK_SPEED * 0.7,
+                    shootCooldown: 0
+                });
+            }
+
+            bullets = [];
+            score = 0;
+            currentScoreEl.textContent = score;
+        }
+
+        function drawTank(tank, isPlayer = false) {
+            ctx.save();
+            ctx.translate(tank.x + TANK_SIZE / 2, tank.y + TANK_SIZE / 2);
+            ctx.rotate(tank.angle);
+
+            if (isPlayer) {
+                ctx.fillStyle = '#00ff88';
+            } else {
+                ctx.fillStyle = '#ff6b6b';
+            }
+
+            ctx.fillRect(-TANK_SIZE / 2, -TANK_SIZE / 4, TANK_SIZE, TANK_SIZE / 2);
+            ctx.fillRect(-TANK_SIZE / 4, -TANK_SIZE / 2, TANK_SIZE / 2, TANK_SIZE);
+
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(0, 0, TANK_SIZE / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(TANK_SIZE / 2, 0, TANK_SIZE / 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawBullet(bullet) {
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, BULLET_SIZE / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 40, 0);
+                ctx.lineTo(i * 40, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * 40);
+                ctx.lineTo(canvas.width, i * 40);
+                ctx.stroke();
+            }
+
+            drawTank(playerTank, true);
+
+            enemyTanks.forEach(tank => drawTank(tank));
+
+            bullets.forEach(bullet => drawBullet(bullet));
+        }
+
+        function update() {
+            updatePlayerTank();
+            updateEnemyTanks();
+            updateBullets();
+            checkCollisions();
+        }
+
+        function updatePlayerTank() {
+            if (keys['ArrowUp']) {
+                playerTank.x += Math.cos(playerTank.angle) * playerTank.speed;
+                playerTank.y += Math.sin(playerTank.angle) * playerTank.speed;
+            }
+            if (keys['ArrowDown']) {
+                playerTank.x -= Math.cos(playerTank.angle) * playerTank.speed;
+                playerTank.y -= Math.sin(playerTank.angle) * playerTank.speed;
+            }
+            if (keys['ArrowLeft']) {
+                playerTank.angle -= 0.05;
+            }
+            if (keys['ArrowRight']) {
+                playerTank.angle += 0.05;
+            }
+
+            playerTank.x = Math.max(0, Math.min(CANVAS_SIZE - TANK_SIZE, playerTank.x));
+            playerTank.y = Math.max(0, Math.min(CANVAS_SIZE - TANK_SIZE, playerTank.y));
+        }
+
+        function updateEnemyTanks() {
+            enemyTanks.forEach(tank => {
+                tank.angle += (Math.random() - 0.5) * 0.02;
+                tank.x += Math.cos(tank.angle) * tank.speed;
+                tank.y += Math.sin(tank.angle) * tank.speed;
+
+                tank.x = Math.max(0, Math.min(CANVAS_SIZE - TANK_SIZE, tank.x));
+                tank.y = Math.max(0, Math.min(CANVAS_SIZE - TANK_SIZE, tank.y));
+
+                tank.shootCooldown--;
+                if (tank.shootCooldown <= 0) {
+                    shootBullet(tank.x + TANK_SIZE / 2, tank.y + TANK_SIZE / 2, tank.angle, false);
+                    tank.shootCooldown = Math.random() * 60 + 30;
+                }
+            });
+        }
+
+        function updateBullets() {
+            bullets.forEach((bullet, index) => {
+                bullet.x += Math.cos(bullet.angle) * BULLET_SPEED;
+                bullet.y += Math.sin(bullet.angle) * BULLET_SPEED;
+
+                if (bullet.x < 0 || bullet.x > CANVAS_SIZE || bullet.y < 0 || bullet.y > CANVAS_SIZE) {
+                    bullets.splice(index, 1);
+                }
+            });
+        }
+
+        function shootBullet(x, y, angle, isPlayer) {
+            bullets.push({
+                x: x,
+                y: y,
+                angle: angle,
+                isPlayer: isPlayer
+            });
+        }
+
+        function checkCollisions() {
+            bullets.forEach((bullet, bulletIndex) => {
+                if (bullet.isPlayer) {
+                    enemyTanks.forEach((tank, tankIndex) => {
+                        if (checkCollision(bullet, tank)) {
+                            enemyTanks.splice(tankIndex, 1);
+                            bullets.splice(bulletIndex, 1);
+                            score += 100;
+                            currentScoreEl.textContent = score;
+                            
+                            if (score > highScore) {
+                                highScore = score;
+                                highScoreEl.textContent = highScore;
+                                localStorage.setItem('tankHighScore', highScore);
+                            }
+
+                            enemyTanks.push({
+                                x: Math.random() * (CANVAS_SIZE - TANK_SIZE),
+                                y: Math.random() * (CANVAS_SIZE - TANK_SIZE),
+                                angle: Math.random() * Math.PI * 2,
+                                speed: TANK_SPEED * 0.7,
+                                shootCooldown: 0
+                            });
+                        }
+                    });
+                } else {
+                    if (checkCollision(bullet, playerTank)) {
+                        gameOver();
+                    }
+                }
+            });
+
+            enemyTanks.forEach(tank => {
+                if (checkCollision(playerTank, tank)) {
+                    gameOver();
+                }
+            });
+        }
+
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + TANK_SIZE &&
+                   obj1.x + BULLET_SIZE > obj2.x &&
+                   obj1.y < obj2.y + TANK_SIZE &&
+                   obj1.y + BULLET_SIZE > obj2.y;
+        }
+
+        function gameStep() {
+            if (!isPaused) {
+                update();
+                draw();
+            }
+        }
+
+        function startGame() {
+            if (isGameRunning) return;
+            
+            initGame();
+            isGameRunning = true;
+            isPaused = false;
+            gameOverlay.classList.add('hidden');
+            pauseBtn.classList.add('active');
+            pauseBtn.textContent = '⏸ 暂停';
+            gameLoop = setInterval(gameStep, 16);
+            draw();
+        }
+
+        function pauseGame() {
+            if (!isGameRunning) return;
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                pauseBtn.textContent = '▶ 继续';
+                pauseBtn.classList.remove('active');
+            } else {
+                pauseBtn.textContent = '⏸ 暂停';
+                pauseBtn.classList.add('active');
+            }
+        }
+
+        function restartGame() {
+            clearInterval(gameLoop);
+            isGameRunning = false;
+            isPaused = false;
+            initGame();
+            draw();
+            showOverlay('准备开始', '');
+        }
+
+        function gameOver() {
+            clearInterval(gameLoop);
+            isGameRunning = false;
+            isPaused = false;
+            pauseBtn.classList.remove('active');
+            pauseBtn.textContent = '⏸ 暂停';
+            showOverlay('游戏结束', `最终得分: ${score}`);
+        }
+
+        function showOverlay(title, scoreText) {
+            overlayTitle.textContent = title;
+            overlayScore.textContent = scoreText;
+            startBtn.textContent = isGameRunning ? '再来一局' : '开始游戏';
+            gameOverlay.classList.remove('hidden');
+        }
+
+        const keys = {};
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (isGameRunning && !isPaused) {
+                    shootBullet(playerTank.x + TANK_SIZE / 2, playerTank.y + TANK_SIZE / 2, playerTank.angle, true);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        startBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', pauseGame);
+        restartBtn.addEventListener('click', restartGame);
+
+        initGame();
+        draw();
+    </script>
+</body>
+</html>

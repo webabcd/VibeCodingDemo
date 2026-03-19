@@ -13,6 +13,20 @@
   - 其会自动打开“终端”展示命令的执行过程和结果
   - 其会自动打开“编辑器”显示编码过程、最终代码、被修改的代码等，开发者可以保留或撤销 ai 生成的代码
   - 等等
+- 输入 /plan + Enter，然后输入需求，则会进入 plan 模式，SOLO Coder 会根据需求生成一份计划文档
+  - 如果需求比较模糊，可以通过与 ai 对话的方式，让 ai 完善需求
+  - 生成的文档可以手动修改，也可以通过对话的方式让 ai 修改
+  - 文档满意后，可以让 ai 根据文档开发代码
+  - [计划文档的示例](.trae/documents/reaction_test_plan.md)
+  - [通过文档生成的代码的示例](plan/reaction-test.html)
+- 输入 /spec + Enter，然后输入需求，则会进入 spec 模式，SOLO Coder 会根据需求生成大纲（spec.md）、任务列表（tasks.md）和验收清单（checklist.md）
+  - 如果需求比较模糊，可以通过与 ai 对话的方式，让 ai 完善需求
+  - 生成的文档可以手动修改，也可以通过对话的方式让 ai 修改
+  - 文档满意后，可以让 ai 根据文档开发代码
+  - [spec.md 示例](.trae/specs/tank_game/spec.md)
+  - [tasks.md 示例](.trae/specs/tank_game/tasks.md)
+  - [checklist.md 示例](.trae/specs/tank_game/checklist.md)
+  - [通过文档生成的代码的示例](spec/tank.html)
 
 ### trae 的 ide 模式
 - 每个由 ai 生成的文件，开发者都可以选择保留或撤销

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>反应速度测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .instructions {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .color-block {
+            width: 300px;
+            height: 300px;
+            background-color: #3498db;
+            border-radius: 10px;
+            margin: 30px auto;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .color-block:hover {
+            opacity: 0.9;
+        }
+        
+        .controls {
+            margin: 30px 0;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-start {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background-color: #229954;
+        }
+        
+        .btn-reset {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background-color: #c0392b;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            text-align: left;
+        }
+        
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-radius: 3px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .average-time {
+            font-weight: bold;
+            color: #3498db;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .status {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+        }
+        
+        .test-count {
+            font-size: 16px;
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>反应速度测试</h1>
+        
+        <div class="instructions">
+            <p>1. 点击「开始测试」按钮</p>
+            <p>2. 等待颜色块变色</p>
+            <p>3. 颜色块变色后立即点击它</p>
+            <p>4. 系统将自动进行 5 次测试</p>
+            <p>5. 查看最终平均反应时间</p>
+        </div>
+        
+        <div class="status" id="status">准备就绪</div>
+        <div class="test-count" id="testCount">测试次数: 0/5</div>
+        
+        <div class="color-block" id="colorBlock">点击开始测试</div>
+        
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn">开始测试</button>
+            <button class="btn btn-reset" id="resetBtn">重置</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h3>测试结果</h3>
+            <div id="resultList"></div>
+            <div class="average-time" id="averageTime"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let changeTime = 0;
+        let isTesting = false;
+        let results = [];
+        let timeoutId = null;
+        let testCount = 0;
+        const MAX_TESTS = 5;
+        
+        // DOM 元素
+        const colorBlock = document.getElementById('colorBlock');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const status = document.getElementById('status');
+        const testCountElement = document.getElementById('testCount');
+        const resultList = document.getElementById('resultList');
+        const averageTime = document.getElementById('averageTime');
+        
+        // 颜色数组
+        const colors = ['#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c'];
+        
+        // 开始测试
+        startBtn.addEventListener('click', startTest);
+        
+        // 重置测试
+        resetBtn.addEventListener('click', resetTest);
+        
+        // 颜色块点击事件
+        colorBlock.addEventListener('click', handleBlockClick);
+        
+        function startTest() {
+            if (isTesting) return;
+            
+            // 重置测试状态
+            resetTest();
+            
+            // 开始第一次测试
+            runNextTest();
+        }
+        
+        function runNextTest() {
+            if (testCount >= MAX_TESTS) {
+                // 测试完成，计算平均值
+                calculateAverage();
+                return;
+            }
+            
+            isTesting = true;
+            startBtn.disabled = true;
+            status.textContent = `准备中... (${testCount + 1}/${MAX_TESTS})`;
+            testCountElement.textContent = `测试次数: ${testCount}/${MAX_TESTS}`;
+            colorBlock.textContent = '等待变色';
+            colorBlock.style.backgroundColor = '#3498db';
+            
+            // 随机延迟 1-5 秒后变色
+            const delay = Math.random() * 4000 + 1000; // 1000-5000ms
+            
+            timeoutId = setTimeout(() => {
+                // 随机选择颜色
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                colorBlock.style.backgroundColor = randomColor;
+                colorBlock.textContent = '点击我！';
+                status.textContent = `点击颜色块！(${testCount + 1}/${MAX_TESTS})`;
+                changeTime = Date.now(); // 记录变色时间
+            }, delay);
+        }
+        
+        function handleBlockClick() {
+            if (!isTesting) return;
+            
+            clearTimeout(timeoutId);
+            
+            if (changeTime === 0) {
+                // 还没变色就点击了
+                status.textContent = '过早点击！请等待颜色变化';
+                colorBlock.textContent = '等待变色';
+                colorBlock.style.backgroundColor = '#3498db';
+                isTesting = false;
+                startBtn.disabled = false;
+                return;
+            }
+            
+            // 计算反应时间
+            const clickTime = Date.now();
+            const reactionTime = clickTime - changeTime;
+            
+            // 记录结果
+            results.push(reactionTime);
+            testCount++;
+            
+            // 更新显示
+            status.textContent = `反应时间: ${reactionTime} ms`;
+            colorBlock.textContent = `反应时间: ${reactionTime} ms`;
+            testCountElement.textContent = `测试次数: ${testCount}/${MAX_TESTS}`;
+            
+            // 更新结果列表
+            updateResults();
+            
+            // 重置状态
+            isTesting = false;
+            changeTime = 0;
+            
+            // 延迟后开始下一次测试
+            if (testCount < MAX_TESTS) {
+                setTimeout(runNextTest, 1000);
+            } else {
+                // 测试完成
+                startBtn.disabled = false;
+                calculateAverage();
+            }
+        }
+        
+        function updateResults() {
+            resultList.innerHTML = '';
+            
+            results.forEach((time, index) => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                item.textContent = `测试 ${index + 1}: ${time} ms`;
+                resultList.appendChild(item);
+            });
+        }
+        
+        function calculateAverage() {
+            if (results.length > 0) {
+                const avg = Math.round(results.reduce((sum, time) => sum + time, 0) / results.length);
+                averageTime.textContent = `平均反应时间: ${avg} ms`;
+                status.textContent = `测试完成！平均反应时间: ${avg} ms`;
+            } else {
+                averageTime.textContent = '';
+            }
+        }
+        
+        function resetTest() {
+            clearTimeout(timeoutId);
+            isTesting = false;
+            startBtn.disabled = false;
+            status.textContent = '准备就绪';
+            testCount = 0;
+            testCountElement.textContent = `测试次数: ${testCount}/${MAX_TESTS}`;
+            colorBlock.textContent = '点击开始测试';
+            colorBlock.style.backgroundColor = '#3498db';
+            results = [];
+            changeTime = 0;
+            updateResults();
+            averageTime.textContent = '';
+        }
+    </script>
+</body>
+</html>

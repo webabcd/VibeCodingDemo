@@ -28,6 +28,7 @@
 - 内置智能体有 Chat, Builder, Builder with MCP, SOLO Coder
 - Chat 一般用于与 ai 进行普通的对话，比如问一些问题，或者让 ai 实现某个功能，然后把 ai 生成的代码手动复制到代码编辑器中
 - Builder, Builder with MCP, SOLO Coder 一般用于让 ai 根据需求开发，它会直接生成代码文件，或修改代码文件，或执行命令
+- 自定义智能体：设置 -> 智能体 -> 创建，然后输入提示词并选择工具后就创建了一个自定义智能体。[提示词示例](prompt/agent_html.md)
 
 ### trae 的聊天框（通过开发一个小游戏介绍 trae 的聊天框的使用）
 1. 通过 @ 选择智能体，切换至 solo 模式
